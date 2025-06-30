@@ -13,16 +13,16 @@ services:
     ports:
       - "8081:8082"  # Expose the ORS API on port 8080
         #  - "9001:9001"  # Expose additional port for monitoring (optional)
-    image: openrouteservice/openrouteservice:v8.0.0
+    image: openrouteservice/openrouteservice:v9.3.0
     # Advanced option! If you different ids to 0:0 and 1000:1000, you have to rebuild the container with the build args UID,GID.
     # The user command is useful if you want easier bind mount access or better security.
     #user: "1000:1000" # Run "mkdir -p ors-docker/config ors-docker/elevation_cache ors-docker/files ors-docker/graphs ors-docker/logs && sudo chown -R 1000:1000 ors" before starting the container!
     volumes:  # Mount relative directories. ONLY for local container runtime. To switch to docker managed volumes see 'Docker Volumes configuration' section below.
       - ./ors-docker:/home/ors  # Mount the ORS application directory (for logs, graphs, elevation_cache, etc.) into its own directory
-      - ./graphs:/home/ors/graphs  # Mount graphs directory individually
-      - ./elevation_cache:/home/ors/elevation_cache  # Mount elevation cache directory individually
-      - ./config:/home/ors/config  # Mount configuration directory individually
-      - ./logs:/home/ors/logs  # Mount logs directory individually
+      #- ./graphs:/home/ors/graphs  # Mount graphs directory individually
+      #- ./elevation_cache:/home/ors/elevation_cache  # Mount elevation cache directory individually
+      #- ./config:/home/ors/config  # Mount configuration directory individually
+      #- ./logs:/home/ors/logs  # Mount logs directory individually
       - ./files:/home/ors/files  # Mount files directory individually
     environment:
       http_proxy: http://192.168.1.254:3128       # opcional, se neclssário
@@ -37,7 +37,7 @@ services:
       # Configure the memory settings for JAVA or pass additional opts
       # Fore more available ENV properties see Prepare CATALINA_OPTS and JAVA_OPTS
       # in https://github.com/GIScience/openrouteservice/blob/main/docker-entrypoint.sh
-      XMS: 5g  # start RAM assigned to java
+      # XMS: 5g  # start RAM assigned to java
       XMX: 7g  # max RAM assigned to java. Rule of Thumb: <PBF-size> * <profiles> * 2
       # Example: 1.5 GB pbf size, two profiles (car and foot-walking)
       # -> 1.5 * 2 * 2 = 6. Set xmx to be AT LEAST `-Xmx6g`
@@ -50,13 +50,10 @@ services:
       # See the ors-config.env file for more options.
       # To have a configuration file-less container, uncomment at least the following properties.
       # The values are examples and provide the default configuration.
-      ors.engine.source_file: files/brazil-latest.osm.pbf
-      ors.engine.graphs_root_path: graphs
-      ors.engine.elevation.cache_path: elevation_cache
-      ors.engine.profiles.hgv.enabled: true
-      ors.engine.profiles.car.enabled: false
-      ors.engine.profiles.hgv.profile: driving-hgv
-      ors.engine.profiles.hgv.maximum_distance: 10000000
+      ors.engine.graphs_data_access: MMAP # MAX JVM HEAP problem without this 
+      ors.engine.profile_default.build.source_file: files/brazil-latest.osm.pbf
+      ors.engine.profile_default.service.maximum_distance: 10000000
+      ors.engine.profiles.driving-hgv.enabled: true
       #logging.level.org.heigit: INFO
 
     # ----------------- ENV file configuration ------------------- #
@@ -82,7 +79,7 @@ services:
 # Define the Docker managed volumes for the ORS application. For more info on Docker Volumes see https://docs.docker.com/compose/compose-file/07-volumes/
 # Volumes are used to persist the data and configuration of the ORS application.
 # If you want to use volumes, uncomment the following lines and remove the ./ prefix from the volume paths in 'services.ors-app.volumes'.
-#volumes:
+#volumes
 #    graphs:
 #    elevation_cache:
 #    config:
