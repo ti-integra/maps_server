@@ -9,7 +9,7 @@ services:
     # You have to add --build to the docker compose command to do so
     build: .
       # context: ./
-    container_name: ors-app
+    container_name: ors_compose
     ports:
       - "8081:8082"  # Expose the ORS API on port 8080
         #  - "9001:9001"  # Expose additional port for monitoring (optional)
